@@ -1,7 +1,6 @@
 var product = require("../models/product");
 
 var productService = {
-
   /**
    * Gets product by id.
    *
@@ -9,10 +8,18 @@ var productService = {
    * @param {string} productId id of the product.
    * @return {object} productData
    */
-  getProductById: async function(productId) {
+  getProductById: async function (productId) {
     var productData;
-    if(productId){
+    if (productId) {
       productData = await product.getProductById(productId);
+    }
+    return productData;
+  },
+
+  getProductByName: async function (name) {
+    var productData;
+    if (name) {
+      productData = await product.getProductByName(name);
     }
     return productData;
   },
@@ -25,13 +32,10 @@ var productService = {
    * @param {string} cursor current cursor.
    * @return {Array}
    */
-  getProducts: async function (nProducts,  cursor) {
+  getProducts: async function (nProducts, cursor) {
     const products = await product.getProducts(nProducts, cursor);
     return products;
   },
-
 };
-
-
 
 module.exports = productService;

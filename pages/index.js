@@ -1,16 +1,9 @@
-
 import Main from "./components/main/tabs";
 
-
-
-
-
-
-function Index({restFetch}) {
-
+function Index({ restFetch }) {
   return (
     <>
-      <Main restFetch = {restFetch}/>
+      <Main restFetch={restFetch} />
     </>
   );
 }

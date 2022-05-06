@@ -3,7 +3,6 @@ var graphQueries = require("./graph-queries");
 var nestedProperty = require("nested-property");
 
 var product = {
-
   /**
    * Gets product by id.
    *
@@ -11,7 +10,7 @@ var product = {
    * @param {string} productId id of the product.
    * @return {object} productData
    */
-  getProductById: async function(productId) {
+  getProductById: async function (productId) {
     var query = gql`{
       product(id:"${productId}") {
         id
@@ -39,13 +38,12 @@ var product = {
       }
     }`;
 
-    const result = await graphQueries
-      .get(query);
+    const result = await graphQueries.get(query);
 
-    var productData ;
+    var productData;
 
-    if(!nestedProperty.has(result,'data.product.id')){
-      throw new Error('Product not found');
+    if (!nestedProperty.has(result, "data.product.id")) {
+      throw new Error("Product not found");
     }
 
     productData = result.data.product;
@@ -53,22 +51,58 @@ var product = {
     return productData;
   },
 
+  getProductByName: async function (name) {
+    const query = gql`
+            {
+              products(first: 10 , query: "title:${name}") {
+                edges {
+                  node {
+                    id
+                    handle
+                    title
+                    requiresSellingPlan
+                    status
+                    images(first: 1){
+                      edges{
+                        node{
+                          originalSrc
+                          altText
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        `;
 
-   /**
-     * Fetches the details of n products.
-     *
-     * @since 1.0.0
-     * @param {int} nProducts number of the products to fetch.
-     * @param {string} cursor current cursor.
-     * @return {array}
-     */
-    getProducts: async function(nProducts = 20, cursor) {
-      const query = gql`
+    const result = await graphQueries.get(query);
+
+    var products;
+    if (nestedProperty.has(result, "data.products.edges")) {
+      products = result.data.products.edges.map((edge) => {
+        var node = edge.node;
+        return node;
+      });
+    }
+    return products;
+  },
+
+  /**
+   * Fetches the details of n products.
+   *
+   * @since 1.0.0
+   * @param {int} nProducts number of the products to fetch.
+   * @param {string} cursor current cursor.
+   * @return {array}
+   */
+  getProducts: async function (nProducts = 20, cursor) {
+    const query = gql`
           query {
             products(
               first: ${nProducts},
               reverse: true,
-              ${cursor && cursor.length ? `after:"${cursor},"` : ''}
+              ${cursor && cursor.length ? `after:"${cursor},"` : ""}
             ) {
               edges{
                 cursor
@@ -104,24 +138,22 @@ var product = {
           }
         `;
 
-      const result = await graphQueries.get(query);
+    const result = await graphQueries.get(query);
 
-      var products;
-      if (nestedProperty.has(result, 'data.products.edges')) {
-        products = result.data.products.edges.map(edge=>{
-          var node = edge.node;
-          return node;
-        });
+    var products;
+    if (nestedProperty.has(result, "data.products.edges")) {
+      products = result.data.products.edges.map((edge) => {
+        var node = edge.node;
+        return node;
+      });
 
-        if(products[0]){
-          products[0].cursor = result.data.products.edges.slice(-1)[0].cursor;
-          products[0].pageInfo = result.data.products.pageInfo;
-        }
-
+      if (products[0]) {
+        products[0].cursor = result.data.products.edges.slice(-1)[0].cursor;
+        products[0].pageInfo = result.data.products.pageInfo;
       }
-      return products;
-    },
-
+    }
+    return products;
+  },
 };
 
 module.exports = product;
